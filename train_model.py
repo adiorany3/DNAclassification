@@ -2,6 +2,9 @@
 
 Run from the project folder:
     python train_model.py
+
+This v4 version uses compact compressed models so every model file is safe for
+GitHub browser upload limits.
 """
 
 from __future__ import annotations
@@ -11,8 +14,7 @@ from pathlib import Path
 
 import joblib
 import pandas as pd
-from sklearn.ensemble import ExtraTreesClassifier, RandomForestClassifier
-from sklearn.linear_model import LogisticRegression
+from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import (
     accuracy_score,
     classification_report,
@@ -22,15 +24,14 @@ from sklearn.metrics import (
     roc_auc_score,
 )
 from sklearn.model_selection import train_test_split
-from sklearn.pipeline import make_pipeline
 from sklearn.base import clone
-from sklearn.preprocessing import StandardScaler
 
 from feature_extraction import FEATURE_COLUMNS, validate_sequence
 
 RANDOM_STATE = 42
-DATA_PATH = Path("processed_dna_dataset.csv")
-MODEL_DIR = Path("models")
+BASE_DIR = Path(__file__).resolve().parent
+DATA_PATH = BASE_DIR / "processed_dna_dataset.csv"
+MODEL_DIR = BASE_DIR / "models"
 MODEL_DIR.mkdir(exist_ok=True)
 
 LEAKAGE_COLUMNS = [
@@ -53,41 +54,29 @@ def load_and_validate_dataset() -> pd.DataFrame:
     for seq in df["Sequence"].astype(str):
         valid, _ = validate_sequence(seq)
         valid_mask.append(valid)
-    df = df.loc[valid_mask].reset_index(drop=True)
-
-    # Keep only the feature columns that are safe for modeling.
-    # Label/leakage columns are not included in X.
-    return df
+    return df.loc[valid_mask].reset_index(drop=True)
 
 
-def evaluate_models(X_train, X_test, y_train, y_test, candidates, labels=None):
-    rows = []
-    best_name = None
-    best_model = None
-    best_f1 = -1.0
+def evaluate_model(X_train, X_test, y_train, y_test, model):
+    fitted_model = clone(model)
+    fitted_model.fit(X_train, y_train)
+    pred = fitted_model.predict(X_test)
+    accuracy = accuracy_score(y_test, pred)
+    precision, recall, f1, _ = precision_recall_fscore_support(
+        y_test, pred, average="weighted", zero_division=0
+    )
+    result = {
+        "accuracy": float(accuracy),
+        "precision": float(precision),
+        "recall": float(recall),
+        "f1_score": float(f1),
+    }
+    return result, fitted_model, pred
 
-    for name, candidate_model in candidates.items():
-        model = clone(candidate_model)
-        model.fit(X_train, y_train)
-        pred = model.predict(X_test)
-        accuracy = accuracy_score(y_test, pred)
-        precision, recall, f1, _ = precision_recall_fscore_support(
-            y_test, pred, average="weighted", zero_division=0
-        )
-        rows.append({
-            "model": name,
-            "accuracy": float(accuracy),
-            "precision": float(precision),
-            "recall": float(recall),
-            "f1_score": float(f1),
-        })
-        if f1 > best_f1:
-            best_f1 = f1
-            best_name = name
-            best_model = model
 
-    best_pred = best_model.predict(X_test)
-    return rows, best_name, best_model, best_pred
+def save_model(model, filename: str) -> None:
+    # compress=3 keeps files small but still fast to load in Streamlit Cloud.
+    joblib.dump(model, MODEL_DIR / filename, compress=3)
 
 
 def main():
@@ -97,50 +86,40 @@ def main():
     y_risk = df["Disease_Risk"].astype(str)
     y_high_risk = (df["Disease_Risk"].astype(str).str.lower() == "high").astype(int)
 
-    candidates = {
-        "RandomForest": RandomForestClassifier(
-            n_estimators=220,
-            random_state=RANDOM_STATE,
-            class_weight="balanced_subsample",
-            n_jobs=-1,
-        ),
-        "ExtraTrees": ExtraTreesClassifier(
-            n_estimators=220,
-            random_state=RANDOM_STATE,
-            class_weight="balanced",
-            n_jobs=-1,
-        ),
-        "LogisticRegression": make_pipeline(
-            StandardScaler(),
-            LogisticRegression(max_iter=2000, class_weight="balanced", random_state=RANDOM_STATE),
-        ),
-    }
+    compact_model = RandomForestClassifier(
+        n_estimators=50,
+        max_depth=8,
+        min_samples_leaf=2,
+        random_state=RANDOM_STATE,
+        class_weight="balanced_subsample",
+        n_jobs=-1,
+    )
 
     X_train, X_test, y_train, y_test = train_test_split(
         X, y_class, test_size=0.2, random_state=RANDOM_STATE, stratify=y_class
     )
-    class_results, best_class_name, best_class_model, class_pred = evaluate_models(
-        X_train, X_test, y_train, y_test, candidates
+    class_result, class_model, class_pred = evaluate_model(
+        X_train, X_test, y_train, y_test, compact_model
     )
 
     Xr_train, Xr_test, yr_train, yr_test = train_test_split(
         X, y_risk, test_size=0.2, random_state=RANDOM_STATE, stratify=y_risk
     )
-    risk_results, best_risk_name, best_risk_model, risk_pred = evaluate_models(
-        Xr_train, Xr_test, yr_train, yr_test, candidates
+    risk_result, risk_model, risk_pred = evaluate_model(
+        Xr_train, Xr_test, yr_train, yr_test, compact_model
     )
 
     Xh_train, Xh_test, yh_train, yh_test = train_test_split(
         X, y_high_risk, test_size=0.2, random_state=RANDOM_STATE, stratify=y_high_risk
     )
-    high_results, best_high_name, best_high_model, high_pred = evaluate_models(
-        Xh_train, Xh_test, yh_train, yh_test, candidates
+    high_result, high_model, high_pred = evaluate_model(
+        Xh_train, Xh_test, yh_train, yh_test, compact_model
     )
 
     high_auc = None
-    if hasattr(best_high_model, "predict_proba"):
+    if hasattr(high_model, "predict_proba"):
         try:
-            high_auc = float(roc_auc_score(yh_test, best_high_model.predict_proba(Xh_test)[:, 1]))
+            high_auc = float(roc_auc_score(yh_test, high_model.predict_proba(Xh_test)[:, 1]))
         except Exception:
             high_auc = None
 
@@ -150,9 +129,9 @@ def main():
         "excluded_leakage_columns": LEAKAGE_COLUMNS,
         "class_labels": sorted(y_class.unique().tolist()),
         "risk_labels": sorted(y_risk.unique().tolist()),
-        "best_class_model": best_class_name,
-        "best_risk_model": best_risk_name,
-        "best_high_risk_model": best_high_name,
+        "best_class_model": "Compact RandomForestClassifier",
+        "best_risk_model": "Compact RandomForestClassifier",
+        "best_high_risk_model": "Compact RandomForestClassifier",
         "high_risk_auc": high_auc,
         "important_note": (
             "Disease_Risk adalah label prediktif dari dataset, bukan diagnosis medis. "
@@ -161,9 +140,9 @@ def main():
     }
 
     metrics = {
-        "class_model_results": class_results,
-        "risk_model_results": risk_results,
-        "high_risk_model_results": high_results,
+        "class_model_results": [class_result],
+        "risk_model_results": [risk_result],
+        "high_risk_model_results": [high_result],
         "best_classification_report": classification_report(y_test, class_pred, output_dict=True, zero_division=0),
         "best_risk_report": classification_report(yr_test, risk_pred, output_dict=True, zero_division=0),
         "best_high_risk_report": classification_report(yh_test, high_pred, output_dict=True, zero_division=0),
@@ -173,17 +152,17 @@ def main():
         "metadata": metadata,
     }
 
-    joblib.dump(best_class_model, MODEL_DIR / "organism_classifier.joblib")
-    joblib.dump(best_risk_model, MODEL_DIR / "severity_classifier.joblib")
-    joblib.dump(best_high_model, MODEL_DIR / "high_risk_classifier.joblib")
-    joblib.dump(metadata, MODEL_DIR / "metadata.joblib")
+    save_model(class_model, "organism_classifier.joblib")
+    save_model(risk_model, "severity_classifier.joblib")
+    save_model(high_model, "high_risk_classifier.joblib")
+    save_model(metadata, "metadata.joblib")
     (MODEL_DIR / "metrics.json").write_text(json.dumps(metrics, indent=2), encoding="utf-8")
 
     print("Training selesai.")
-    print(f"Best model klasifikasi DNA: {best_class_name}")
-    print(f"Best model tingkat keparahan: {best_risk_name}")
-    print(f"Best model high-risk detector: {best_high_name}")
-    print("File model tersimpan di folder models/.")
+    print(f"Akurasi klasifikasi DNA: {class_result['accuracy']:.4f}")
+    print(f"Akurasi tingkat keparahan: {risk_result['accuracy']:.4f}")
+    print(f"Akurasi high-risk detector: {high_result['accuracy']:.4f}")
+    print("File model tersimpan di folder models/ dengan ukuran kecil.")
 
 
 if __name__ == "__main__":

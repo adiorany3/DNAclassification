@@ -1,72 +1,179 @@
 {
   "class_model_results": [
     {
-      "model": "ExtraTrees",
-      "accuracy": 0.7066666666666667,
-      "precision": 0.6995631320716902,
-      "recall": 0.7066666666666667,
-      "f1_score": 0.6852299534763656
-    },
-    {
-      "model": "RandomForest",
-      "accuracy": 0.705,
-      "precision": 0.7057208853520793,
-      "recall": 0.705,
-      "f1_score": 0.6833608337548014
-    },
-    {
-      "model": "LogisticRegression",
-      "accuracy": 0.67,
-      "precision": 0.6944414444968738,
-      "recall": 0.67,
-      "f1_score": 0.6055553928733767
+      "accuracy": 0.7133333333333334,
+      "precision": 0.738207102378298,
+      "recall": 0.7133333333333334,
+      "f1_score": 0.6812582204732649
     }
   ],
   "risk_model_results": [
     {
-      "model": "RandomForest",
-      "accuracy": 0.43,
-      "precision": 0.4241352712239103,
-      "recall": 0.43,
-      "f1_score": 0.4238054225212123
-    },
-    {
-      "model": "LogisticRegression",
-      "accuracy": 0.45166666666666666,
-      "precision": 0.44065998587143,
-      "recall": 0.45166666666666666,
-      "f1_score": 0.4143159113060429
-    },
-    {
-      "model": "ExtraTrees",
-      "accuracy": 0.4166666666666667,
-      "precision": 0.4095450450835831,
-      "recall": 0.4166666666666667,
-      "f1_score": 0.40951290760773307
+      "accuracy": 0.44333333333333336,
+      "precision": 0.43510393793002494,
+      "recall": 0.44333333333333336,
+      "f1_score": 0.4159170383890419
     }
   ],
   "high_risk_model_results": [
     {
-      "model": "LogisticRegression",
-      "accuracy": 0.6233333333333333,
-      "precision": 0.722672677589238,
-      "recall": 0.6233333333333333,
-      "f1_score": 0.6273072471509971
-    },
-    {
-      "model": "ExtraTrees",
       "accuracy": 0.625,
-      "precision": 0.6047346640701071,
+      "precision": 0.6965863997113997,
       "recall": 0.625,
-      "f1_score": 0.610423733526108
-    },
-    {
-      "model": "RandomForest",
-      "accuracy": 0.6133333333333333,
-      "precision": 0.5853515120911182,
-      "recall": 0.6133333333333333,
-      "f1_score": 0.592130503144654
+      "f1_score": 0.6323376987183976
     }
+  ],
+  "best_classification_report": {
+    "Bacteria": {
+      "precision": 0.8461538461538461,
+      "recall": 0.9407894736842105,
+      "f1-score": 0.8909657320872274,
+      "support": 152.0
+    },
+    "Human": {
+      "precision": 0.6260869565217392,
+      "recall": 0.96,
+      "f1-score": 0.7578947368421053,
+      "support": 150.0
+    },
+    "Plant": {
+      "precision": 0.6666666666666666,
+      "recall": 0.6845637583892618,
+      "f1-score": 0.6754966887417219,
+      "support": 149.0
+    },
+    "Virus": {
+      "precision": 0.8125,
+      "recall": 0.26174496644295303,
+      "f1-score": 0.39593908629441626,
+      "support": 149.0
+    },
+    "accuracy": 0.7133333333333334,
+    "macro avg": {
+      "precision": 0.737851867335563,
+      "recall": 0.7117745496291064,
+      "f1-score": 0.6800740609913677,
+      "support": 600.0
+    },
+    "weighted avg": {
+      "precision": 0.738207102378298,
+      "recall": 0.7133333333333334,
+      "f1-score": 0.6812582204732649,
+      "support": 600.0
+    }
+  },
+  "best_risk_report": {
+    "High": {
+      "precision": 0.4678362573099415,
+      "recall": 0.7655502392344498,
+      "f1-score": 0.5807622504537205,
+      "support": 209.0
+    },
+    "Low": {
+      "precision": 0.4782608695652174,
+      "recall": 0.28061224489795916,
+      "f1-score": 0.3536977491961415,
+      "support": 196.0
+    },
+    "Medium": {
+      "precision": 0.35664335664335667,
+      "recall": 0.26153846153846155,
+      "f1-score": 0.30177514792899407,
+      "support": 195.0
+    },
+    "accuracy": 0.44333333333333336,
+    "macro avg": {
+      "precision": 0.43424682783950513,
+      "recall": 0.43590031522362344,
+      "f1-score": 0.4120783825262853,
+      "support": 600.0
+    },
+    "weighted avg": {
+      "precision": 0.43510393793002494,
+      "recall": 0.44333333333333336,
+      "f1-score": 0.4159170383890419,
+      "support": 600.0
+    }
+  },
+  "best_high_risk_report": {
+    "0": {
+      "precision": 0.8143939393939394,
+      "recall": 0.5498721227621484,
+      "f1-score": 0.6564885496183206,
+      "support": 391.0
+    },
+    "1": {
+      "precision": 0.47619047619047616,
+      "recall": 0.7655502392344498,
+      "f1-score": 0.5871559633027523,
+      "support": 209.0
+    },
+    "accuracy": 0.625,
+    "macro avg": {
+      "precision": 0.6452922077922079,
+      "recall": 0.6577111809982991,
+      "f1-score": 0.6218222564605365,
+      "support": 600.0
+    },
+    "weighted avg": {
+      "precision": 0.6965863997113997,
+      "recall": 0.625,
+      "f1-score": 0.6323376987183976,
+      "support": 600.0
+    }
+  },
+  "class_confusion_matrix": [
+    [
+      143,
+      0,
+      0,
+      9
+    ],
+    [
+      0,
+      144,
+      6,
+      0
+    ],
+    [
+      0,
+      47,
+      102,
+      0
+    ],
+    [
+      26,
+      39,
+      45,
+      39
+    ]
+  ],
+  "risk_confusion_matrix": [
+    [
+      160,
+      13,
+      36
+    ],
+    [
+      85,
+      55,
+      56
+    ],
+    [
+      97,
+      47,
+      51
+    ]
+  ],
+  "high_risk_confusion_matrix": [
+    [
+      215,
+      176
+    ],
+    [
+      49,
+      160
+    ]
   ],
   "metadata": {
     "dataset_rows_used": 3000,
@@ -101,9 +208,10 @@
       "Low",
       "Medium"
     ],
-    "best_class_model": "ExtraTrees",
-    "best_risk_model": "RandomForest",
-    "best_high_risk_model": "LogisticRegression",
-    "important_note": "Disease_Risk adalah label prediktif dari dataset, bukan diagnosis medis final."
+    "best_class_model": "Compact RandomForestClassifier",
+    "best_risk_model": "Compact RandomForestClassifier",
+    "best_high_risk_model": "Compact RandomForestClassifier",
+    "high_risk_auc": 0.6776637012200344,
+    "important_note": "Disease_Risk adalah label prediktif dari dataset, bukan diagnosis medis. Gunakan hasil sebagai prototipe/pendukung analisis, bukan keputusan klinis final."
   }
 }

@@ -1,4 +1,6 @@
 from pathlib import Path
+import subprocess
+import sys
 
 import joblib
 import pandas as pd
@@ -8,15 +10,66 @@ from feature_extraction import FEATURE_COLUMNS, build_feature_frame, clean_seque
 
 st.set_page_config(page_title="DNA Sequence Classifier", page_icon="🧬", layout="wide")
 
-MODEL_DIR = Path("models")
+BASE_DIR = Path(__file__).resolve().parent
+MODEL_DIR = BASE_DIR / "models"
+MODEL_FILES = [
+    MODEL_DIR / "organism_classifier.joblib",
+    MODEL_DIR / "severity_classifier.joblib",
+    MODEL_DIR / "high_risk_classifier.joblib",
+    MODEL_DIR / "metadata.joblib",
+]
 
-@st.cache_resource
-def load_models():
+
+def ensure_models_available():
+    """Use uploaded models if available; otherwise train once inside Streamlit Cloud."""
+    missing = [path.name for path in MODEL_FILES if not path.exists()]
+    if not missing:
+        return
+
+    train_script = BASE_DIR / "train_model.py"
+    data_file = BASE_DIR / "processed_dna_dataset.csv"
+    if not train_script.exists() or not data_file.exists():
+        raise FileNotFoundError(
+            "Model belum tersedia dan file train_model.py / processed_dna_dataset.csv tidak ditemukan. "
+            "Upload seluruh folder project ke GitHub."
+        )
+
+    with st.spinner("Model belum ditemukan. Sistem sedang training otomatis satu kali..."):
+        result = subprocess.run(
+            [sys.executable, str(train_script)],
+            cwd=str(BASE_DIR),
+            capture_output=True,
+            text=True,
+            timeout=180,
+        )
+    if result.returncode != 0:
+        raise RuntimeError(
+            "Training otomatis gagal. Log error:\n"
+            + result.stderr[-3000:]
+        )
+
+
+def _load_model_files():
     class_model = joblib.load(MODEL_DIR / "organism_classifier.joblib")
     severity_model = joblib.load(MODEL_DIR / "severity_classifier.joblib")
     high_risk_model = joblib.load(MODEL_DIR / "high_risk_classifier.joblib")
     metadata = joblib.load(MODEL_DIR / "metadata.joblib")
     return class_model, severity_model, high_risk_model, metadata
+
+
+@st.cache_resource
+def load_models():
+    ensure_models_available()
+    try:
+        return _load_model_files()
+    except Exception:
+        # If serialized models are incompatible with the cloud environment,
+        # retrain once using the uploaded dataset, then reload.
+        for path in MODEL_FILES:
+            if path.exists():
+                path.unlink()
+        ensure_models_available()
+        return _load_model_files()
 
 
 def probability_table(model, X):
@@ -30,6 +83,7 @@ def probability_table(model, X):
 def format_percent(value):
     return f"{value * 100:.2f}%"
 
+
 st.title("🧬 Sistem Identifikasi Sequence DNA")
 st.write(
     "Sistem ini menerima input sequence DNA, menghitung fitur komposisi basa, "
@@ -39,13 +93,13 @@ st.write(
 try:
     class_model, severity_model, high_risk_model, metadata = load_models()
 except Exception as exc:
-    st.error("Model belum tersedia. Jalankan `python train_model.py` terlebih dahulu.")
+    st.error("Model belum bisa dimuat. Pastikan semua file project sudah di-upload ke GitHub.")
     st.exception(exc)
     st.stop()
 
 with st.expander("Informasi model dan batasan"):
-    st.write(f"Model klasifikasi DNA terbaik: **{metadata.get('best_class_model')}**")
-    st.write(f"Model tingkat keparahan terbaik: **{metadata.get('best_risk_model')}**")
+    st.write(f"Model klasifikasi DNA: **{metadata.get('best_class_model')}**")
+    st.write(f"Model tingkat keparahan: **{metadata.get('best_risk_model')}**")
     st.warning(metadata.get("important_note", "Hasil prediksi perlu divalidasi ahli."))
 
 example_sequence = (
