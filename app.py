@@ -10,6 +10,52 @@ from feature_extraction import FEATURE_COLUMNS, build_feature_frame, clean_seque
 
 st.set_page_config(page_title="DNA Sequence Classifier", page_icon="🧬", layout="wide")
 
+# Custom CSS: menyembunyikan elemen bawaan Streamlit dan membuat footer aplikasi
+st.markdown(
+    """
+    <style>
+        #MainMenu {visibility: hidden;}
+        footer {visibility: hidden;}
+        header {visibility: hidden;}
+        [data-testid="stToolbar"] {display: none !important;}
+        [data-testid="stDecoration"] {display: none !important;}
+        [data-testid="stStatusWidget"] {display: none !important;}
+        [data-testid="stHeader"] {display: none !important;}
+        .viewerBadge_container__1QSob {display: none !important;}
+        .css-1rs6os {display: none !important;}
+        .css-17ziqus {display: none !important;}
+
+        .main .block-container {
+            padding-top: 2rem;
+            padding-bottom: 5rem;
+        }
+
+        .custom-footer {
+            position: fixed;
+            left: 0;
+            bottom: 0;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.96);
+            border-top: 1px solid rgba(49, 51, 63, 0.18);
+            text-align: center;
+            padding: 10px 12px;
+            font-size: 13px;
+            color: #31333F;
+            z-index: 999999;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            .custom-footer {
+                background: rgba(14, 17, 23, 0.96);
+                border-top: 1px solid rgba(250, 250, 250, 0.18);
+                color: #FAFAFA;
+            }
+        }
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
+
 BASE_DIR = Path(__file__).resolve().parent
 MODEL_DIR = BASE_DIR / "models"
 MODEL_FILES = [
@@ -179,3 +225,12 @@ if predict:
 
 st.divider()
 st.caption("Prototype machine learning untuk klasifikasi sequence DNA berbasis Streamlit.")
+
+st.markdown(
+    """
+    <div class="custom-footer">
+        Developed by <strong>Marcus Thorne</strong> | DNA Sequence Classification System
+    </div>
+    """,
+    unsafe_allow_html=True,
+)
