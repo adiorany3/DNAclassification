@@ -1,0 +1,109 @@
+{
+  "class_model_results": [
+    {
+      "model": "ExtraTrees",
+      "accuracy": 0.7066666666666667,
+      "precision": 0.6995631320716902,
+      "recall": 0.7066666666666667,
+      "f1_score": 0.6852299534763656
+    },
+    {
+      "model": "RandomForest",
+      "accuracy": 0.705,
+      "precision": 0.7057208853520793,
+      "recall": 0.705,
+      "f1_score": 0.6833608337548014
+    },
+    {
+      "model": "LogisticRegression",
+      "accuracy": 0.67,
+      "precision": 0.6944414444968738,
+      "recall": 0.67,
+      "f1_score": 0.6055553928733767
+    }
+  ],
+  "risk_model_results": [
+    {
+      "model": "RandomForest",
+      "accuracy": 0.43,
+      "precision": 0.4241352712239103,
+      "recall": 0.43,
+      "f1_score": 0.4238054225212123
+    },
+    {
+      "model": "LogisticRegression",
+      "accuracy": 0.45166666666666666,
+      "precision": 0.44065998587143,
+      "recall": 0.45166666666666666,
+      "f1_score": 0.4143159113060429
+    },
+    {
+      "model": "ExtraTrees",
+      "accuracy": 0.4166666666666667,
+      "precision": 0.4095450450835831,
+      "recall": 0.4166666666666667,
+      "f1_score": 0.40951290760773307
+    }
+  ],
+  "high_risk_model_results": [
+    {
+      "model": "LogisticRegression",
+      "accuracy": 0.6233333333333333,
+      "precision": 0.722672677589238,
+      "recall": 0.6233333333333333,
+      "f1_score": 0.6273072471509971
+    },
+    {
+      "model": "ExtraTrees",
+      "accuracy": 0.625,
+      "precision": 0.6047346640701071,
+      "recall": 0.625,
+      "f1_score": 0.610423733526108
+    },
+    {
+      "model": "RandomForest",
+      "accuracy": 0.6133333333333333,
+      "precision": 0.5853515120911182,
+      "recall": 0.6133333333333333,
+      "f1_score": 0.592130503144654
+    }
+  ],
+  "metadata": {
+    "dataset_rows_used": 3000,
+    "feature_columns": [
+      "GC_Content",
+      "AT_Content",
+      "Sequence_Length",
+      "Num_A",
+      "Num_T",
+      "Num_C",
+      "Num_G",
+      "kmer_3_freq",
+      "Mutation_Flag",
+      "GC_to_AT_Ratio",
+      "Sequence_Entropy"
+    ],
+    "excluded_leakage_columns": [
+      "Disease_Risk_Encoded",
+      "Class_Bacteria",
+      "Class_Human",
+      "Class_Plant",
+      "Class_Virus"
+    ],
+    "class_labels": [
+      "Bacteria",
+      "Human",
+      "Plant",
+      "Virus"
+    ],
+    "risk_labels": [
+      "High",
+      "Low",
+      "Medium"
+    ],
+    "best_class_model": "ExtraTrees",
+    "best_risk_model": "RandomForest",
+    "best_high_risk_model": "LogisticRegression",
+    "important_note": "Disease_Risk adalah label prediktif dari dataset, bukan diagnosis medis final."
+  }
+}
