@@ -224,12 +224,12 @@ if predict:
     )
 
 st.divider()
-st.caption("Prototype machine learning untuk klasifikasi sequence DNA berbasis Streamlit.")
+st.caption("Prototype machine learning untuk klasifikasi sequence DNA berbasis Streamlit, dengan training di Kaggle.")
 
 st.markdown(
     """
     <div class="custom-footer">
-        Developed by <strong>Marcus Thorne</strong> | DNA Sequence Classification System
+        Developed by <strong>Galuh Adi Insani</strong> | DNA Sequence Classification System
     </div>
     """,
     unsafe_allow_html=True,
